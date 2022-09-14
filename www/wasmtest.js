@@ -13,13 +13,32 @@ var imports = {
         console_log_ex: console_log_ex
     }
 };
-// do the thing
-fetch("wasmtest.wasm")
-    .then(function (response) { return response.arrayBuffer(); })
-    .then(function (bytes) { return WebAssembly.instantiate(bytes, imports); })
-    .then(function (results) {
-    instance = results.instance;
-    // grab our exported function from wasm
-    var add = results.instance.exports.add;
-    console.log(add(3, 4));
-});
+
+async function go() {
+  let response = await fetch('wasmtest.wasm');
+  let body = await response.arrayBuffer();
+  let {module, instance} = await WebAssembly.instantiate(body, imports);
+  window.module = module;
+  window.instance = instance;
+
+  let index_of_slice_struct = instance.exports.fill(9);
+  let slices_view = new DataView(instance.exports.memory.buffer);
+  // let ary = new Uint32Array(instance.exports.memory.buffer, index_of_slice_struct, 8);
+  let ptr = slices_view.getUint32(index_of_slice_struct, true);
+  let len = slices_view.getUint32(index_of_slice_struct+4, true);
+
+  let slice_content = new Uint8Array(instance.exports.memory.buffer, ptr, len);
+
+  window.junk = {
+    index_of_slice_struct,
+    slices_view,
+    ptr,
+    len,
+    slice_content,
+  };
+
+  console.log(junk);
+
+}
+
+go();

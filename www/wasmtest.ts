@@ -9,6 +9,8 @@ function console_log_ex(location : number, size : number) {
     console.log(string);
 }
 
+const memory = new WebAssembly.Memory({ initial: 10, maximum: 100 });
+
 // define our imports
 const imports : WebAssembly.Imports = {
     env : {
@@ -23,6 +25,6 @@ fetch("wasmtest.wasm")
     .then(results => {
         instance = results.instance;
         // grab our exported function from wasm
-        const add = (results.instance.exports.add as CallableFunction);
-        console.log(add(3,4));
+        const fill = (results.instance.exports.fill as CallableFunction);
+        console.log(fill(3));
     });
